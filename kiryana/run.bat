@@ -5,12 +5,14 @@ cd /d "%~dp0"
 set PYTHONIOENCODING=utf-8
 set PYTHONDONTWRITEBYTECODE=1
 
-if not exist ".venv_win\Scripts\python.exe" (
+if not exist ".venv_win\pyvenv.cfg" (
+    echo Recreating Python virtual environment...
+    powershell -NoProfile -ExecutionPolicy Bypass -Command "if (Test-Path -LiteralPath '.venv_win') { Remove-Item -LiteralPath '.venv_win' -Recurse -Force }"
     python -m venv .venv_win
 )
 
 if not exist ".env" (
-    > .env echo DATABASE_URL=postgresql://postgres:your_password@localhost:5432/kiryana
+    > .env echo DATABASE_URL=postgresql+pg8000://postgres:your_password@localhost:5432/kiryana
     >> .env echo SECRET_KEY=dev-secret-key
     >> .env echo JWT_SECRET_KEY=kiryana-jwt-key-2025
     >> .env echo FLASK_ENV=development
