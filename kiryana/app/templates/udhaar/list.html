@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+{% block title %}Udhaar — Kiryana{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-people me-2"></i>Customer Udhaar (اُدھار)</h4>
+  <a href="{{ url_for('udhaar.add_customer') }}" class="btn btn-primary">
+    <i class="bi bi-person-plus me-1"></i>Add Customer
+  </a>
+</div>
+
+{% if customer_data %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Customer</th>
+          <th>Phone</th>
+          <th class="text-end">Balance (Rs.)</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for row in customer_data %}
+        {% set bal = row.balance | float %}
+        <tr>
+          <td>
+            <a href="{{ url_for('udhaar.customer_detail', customer_id=row.customer.id) }}" class="fw-semibold text-decoration-none">
+              {{ row.customer.name }}
+            </a>
+          </td>
+          <td class="text-muted">{{ row.customer.phone or '—' }}</td>
+          <td class="text-end">
+            <span class="{% if bal > 5000 %}balance-high{% elif bal > 1000 %}balance-med{% else %}balance-low{% endif %}">
+              {{ "{:,.0f}".format(bal) }}
+            </span>
+          </td>
+          <td>
+            {% if row.is_overdue and bal > 0 %}
+              <span class="overdue-badge">Overdue 30d+</span>
+            {% elif bal > 0 %}
+              <span class="badge bg-warning text-dark">Active</span>
+            {% else %}
+              <span class="badge bg-success">Cleared</span>
+            {% endif %}
+          </td>
+          <td>
+            <a href="{{ url_for('udhaar.customer_detail', customer_id=row.customer.id) }}" class="btn btn-sm btn-outline-primary me-1">View</a>
+            <a href="{{ url_for('udhaar.edit_customer', customer_id=row.customer.id) }}" class="btn btn-sm btn-outline-secondary me-1">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <form method="POST" action="{{ url_for('udhaar.delete_customer', customer_id=row.customer.id) }}" style="display:inline" onsubmit="return confirm('Delete this customer? This is only allowed when the balance is cleared.');">
+              <button type="submit" class="btn btn-sm btn-outline-danger me-1">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+            {% if row.customer.phone %}
+            <a href="{{ url_for('udhaar.whatsapp_draft', customer_id=row.customer.id) }}" class="btn btn-sm btn-outline-success">
+              <i class="bi bi-whatsapp"></i>
+            </a>
+            {% endif %}
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card p-5 text-center text-muted">
+  <i class="bi bi-people" style="font-size:3rem"></i>
+  <p class="mt-2">No customers yet. <a href="{{ url_for('udhaar.add_customer') }}">Add your first customer</a>.</p>
+</div>
+{% endif %}
+{% endblock %}

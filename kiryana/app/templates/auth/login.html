@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% block title %}Login — Kiryana{% endblock %}
+{% block content %}
+<div class="row justify-content-center mt-5">
+  <div class="col-12 col-sm-10 col-md-6 col-lg-4">
+    <div class="text-center mb-4">
+      <h2 style="color:var(--k-green); font-weight:700;"><i class="bi bi-shop me-2"></i>Kiryana</h2>
+      <p class="text-muted">Shop Management System</p>
+    </div>
+    <div class="card p-4">
+      <h5 class="mb-3">Sign In</h5>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Email</label>
+          <input type="email" name="email" class="form-control" required autofocus>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password</label>
+          <input type="password" name="password" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Login</button>
+      </form>
+    </div>
+    <p class="text-center mt-3 text-muted small">
+      New shop owner? <a href="{{ url_for('auth.shop_register') }}">Request an account</a>
+      <br>
+      First time setup? <a href="{{ url_for('auth.register') }}">Create admin account</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

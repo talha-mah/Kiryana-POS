@@ -1,0 +1,73 @@
+{% extends 'base.html' %}
+{% block title %}Expenses — Kiryana{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-cash-stack me-2"></i>Expenses (اخراجات)</h4>
+  <a href="{{ url_for('expenses.summary') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-bar-chart me-1"></i>Monthly Summary
+  </a>
+</div>
+
+<div class="row g-3">
+  <!-- Log Expense -->
+  <div class="col-12 col-md-4">
+    <div class="card">
+      <div class="card-header"><span class="fw-semibold"><i class="bi bi-plus-circle me-1"></i>Log Expense</span></div>
+      <div class="card-body">
+        <form method="POST">
+          <div class="mb-3">
+            <label class="form-label">Category</label>
+            <select name="category" class="form-select" required>
+              {% for cat in categories %}
+              <option value="{{ cat }}">{{ cat.title() }}</option>
+              {% endfor %}
+            </select>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Amount (Rs.)</label>
+            <input type="number" name="amount" class="form-control" min="1" step="1" required>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Date</label>
+            <input type="date" name="expense_date" class="form-control" value="{{ today }}">
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Note (optional)</label>
+            <input type="text" name="note" class="form-control" placeholder="Details...">
+          </div>
+          <button type="submit" class="btn btn-primary w-100">Log Expense</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Expenses -->
+  <div class="col-12 col-md-8">
+    <div class="card">
+      <div class="card-header"><span class="fw-semibold"><i class="bi bi-clock-history me-1"></i>Recent Expenses</span></div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>Date</th><th>Category</th><th class="text-end">Amount</th><th>Note</th></tr>
+          </thead>
+          <tbody>
+          {% for e in recent %}
+          <tr>
+            <td class="text-muted small">{{ e.expense_date.strftime('%d %b %Y') }}</td>
+            <td>
+              {% set icons = {'rent': '🏠', 'electricity': '⚡', 'salary': '👤', 'stock': '📦', 'other': '📝'} %}
+              {{ icons.get(e.category.value, '📝') }} {{ e.category.value.title() }}
+            </td>
+            <td class="text-end fw-semibold text-danger">Rs. {{ "{:,.0f}".format(e.amount) }}</td>
+            <td class="text-muted small">{{ e.note or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="4" class="text-center text-muted py-3">No expenses logged yet.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

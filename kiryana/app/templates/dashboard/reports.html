@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Reports — Kiryana{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-bar-chart me-2"></i>Sales Reports</h4>
+  <div class="btn-group">
+    <a href="{{ url_for('dashboard.reports', range='daily') }}"
+       class="btn btn-sm {% if range_type == 'daily' %}btn-primary{% else %}btn-outline-primary{% endif %}">Today</a>
+    <a href="{{ url_for('dashboard.reports', range='weekly') }}"
+       class="btn btn-sm {% if range_type == 'weekly' %}btn-primary{% else %}btn-outline-primary{% endif %}">7 Days</a>
+    <a href="{{ url_for('dashboard.reports', range='monthly') }}"
+       class="btn btn-sm {% if range_type == 'monthly' %}btn-primary{% else %}btn-outline-primary{% endif %}">This Month</a>
+  </div>
+</div>
+
+{% if sales %}
+<div class="card mb-3 p-3 d-flex flex-row align-items-center gap-3">
+  <div>
+    <div class="text-muted small">Total Revenue</div>
+    <div class="fs-2 fw-bold text-success">Rs. {{ "{:,.0f}".format(total) }}</div>
+  </div>
+  <div class="ms-4">
+    <div class="text-muted small">Transactions</div>
+    <div class="fs-2 fw-bold">{{ sales|length }}</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr>
+          <th>Date & Time</th>
+          <th>Customer</th>
+          <th>Payment</th>
+          <th class="text-end">Amount (Rs.)</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for s in sales %}
+      <tr>
+        <td class="text-muted small">{{ s.created_at.strftime('%d %b, %H:%M') }}</td>
+        <td>{{ s.customer_name or '<span class="text-muted">Walk-in</span>' | safe }}</td>
+        <td>
+          {% if s.payment_type.value == 'cash' %}
+            <span class="badge bg-success">Cash</span>
+          {% else %}
+            <span class="badge bg-warning text-dark">Udhaar</span>
+          {% endif %}
+        </td>
+        <td class="text-end fw-semibold">{{ "{:,.0f}".format(s.total_amount) }}</td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card p-5 text-center text-muted">
+  <i class="bi bi-bar-chart" style="font-size:3rem"></i>
+  <p class="mt-2">No sales data for this period.</p>
+</div>
+{% endif %}
+{% endblock %}

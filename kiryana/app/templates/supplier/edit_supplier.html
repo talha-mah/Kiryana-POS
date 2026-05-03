@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}Edit Supplier - Kiryana{% endblock %}
+{% block content %}
+<div class="mb-3"><a href="{{ url_for('supplier.supplier_detail', supplier_id=supplier.id) }}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i>Back to Supplier</a></div>
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-pencil-square me-2"></i>Edit Supplier</h5>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label">Supplier Name <span class="text-danger">*</span></label>
+          <input type="text" name="name" class="form-control" required autofocus value="{{ supplier.name }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Phone Number</label>
+          <input type="text" name="phone" class="form-control" value="{{ supplier.phone or '' }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Payment Terms (days)</label>
+          <input type="number" name="payment_terms_days" class="form-control" value="{{ supplier.payment_terms_days }}" min="1" max="90">
+          <div class="form-text">How many days until payment is due after delivery.</div>
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

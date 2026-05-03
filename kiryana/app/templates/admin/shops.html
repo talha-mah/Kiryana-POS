@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% block title %}Shops — Admin{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-shop me-2"></i>Registered Shops</h4>
+  <a href="{{ url_for('admin.add_shop') }}" class="btn btn-primary">
+    <i class="bi bi-plus me-1"></i>Add Shop
+  </a>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header d-flex justify-content-between align-items-center">
+    <h5 class="fw-bold mb-0"><i class="bi bi-person-check me-2"></i>Pending Shop Requests</h5>
+    <span class="badge bg-warning text-dark">{{ pending_requests|length }} pending</span>
+  </div>
+  {% if pending_requests %}
+  <div class="table-responsive">
+    <table class="table table-hover mb-0 align-middle">
+      <thead>
+        <tr><th>Shop</th><th>Owner</th><th>Contact</th><th>Requested</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+      {% for request_item in pending_requests %}
+      <tr>
+        <td>
+          <div class="fw-semibold">{{ request_item.shop_name }}</div>
+          <div class="text-muted small">{{ request_item.address or 'No address provided' }}</div>
+        </td>
+        <td>{{ request_item.owner_name }}</td>
+        <td>
+          <div>{{ request_item.email }}</div>
+          <div class="text-muted small">{{ request_item.phone or 'No phone' }}</div>
+        </td>
+        <td class="text-muted small">{{ request_item.created_at.strftime('%d %b %Y') }}</td>
+        <td>
+          <div class="d-flex flex-wrap gap-2">
+            <form method="POST" action="{{ url_for('admin.approve_shop_request', request_id=request_item.id) }}">
+              <button type="submit" class="btn btn-sm btn-success">
+                <i class="bi bi-check-lg me-1"></i>Approve
+              </button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.reject_shop_request', request_id=request_item.id) }}">
+              <button type="submit" class="btn btn-sm btn-outline-danger">
+                <i class="bi bi-x-lg me-1"></i>Reject
+              </button>
+            </form>
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="p-4 text-muted">
+    <i class="bi bi-inbox me-1"></i>No pending shop registration requests.
+  </div>
+  {% endif %}
+</div>
+
+{% if shops %}
+<div class="card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>Shop Name</th><th>Owner</th><th>Phone</th><th>Status</th><th>Created</th><th>Actions</th></tr>
+      </thead>
+      <tbody>
+      {% for shop in shops %}
+      <tr>
+        <td class="fw-semibold">{{ shop.name }}</td>
+        <td>{{ shop.owner_name }}</td>
+        <td class="text-muted">{{ shop.phone or '—' }}</td>
+        <td>
+          {% if shop.is_active %}
+            <span class="badge bg-success">Active</span>
+          {% else %}
+            <span class="badge bg-secondary">Inactive</span>
+          {% endif %}
+        </td>
+        <td class="text-muted small">{{ shop.created_at.strftime('%d %b %Y') }}</td>
+        <td>
+          <a href="{{ url_for('admin.edit_shop', shop_id=shop.id) }}" class="btn btn-sm btn-outline-secondary me-1">
+            <i class="bi bi-pencil"></i>
+          </a>
+          <form method="POST" action="{{ url_for('admin.toggle_shop', shop_id=shop.id) }}" style="display:inline">
+            <button type="submit" class="btn btn-sm btn-outline-{% if shop.is_active %}warning{% else %}success{% endif %} me-1">
+              {% if shop.is_active %}Deactivate{% else %}Activate{% endif %}
+            </button>
+          </form>
+          <form method="POST" action="{{ url_for('admin.delete_shop', shop_id=shop.id) }}" style="display:inline" onsubmit="return confirm('Permanently delete this shop and all related sales, customers, suppliers, expenses, users, and products?');">
+            <button type="submit" class="btn btn-sm btn-outline-danger">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% else %}
+<div class="card p-5 text-center text-muted">
+  <i class="bi bi-shop" style="font-size:3rem"></i>
+  <p class="mt-2">No shops registered yet. <a href="{{ url_for('admin.add_shop') }}">Add the first shop</a>.</p>
+</div>
+{% endif %}
+
+{% if reviewed_requests %}
+<div class="card mt-4">
+  <div class="card-header">
+    <h5 class="fw-bold mb-0"><i class="bi bi-clock-history me-2"></i>Recent Reviewed Requests</h5>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead>
+        <tr><th>Shop</th><th>Email</th><th>Status</th><th>Reviewed</th></tr>
+      </thead>
+      <tbody>
+      {% for request_item in reviewed_requests %}
+      <tr>
+        <td>{{ request_item.shop_name }}</td>
+        <td>{{ request_item.email }}</td>
+        <td>
+          {% if request_item.status.value == 'approved' %}
+            <span class="badge bg-success">Approved</span>
+          {% else %}
+            <span class="badge bg-danger">Rejected</span>
+          {% endif %}
+        </td>
+        <td class="text-muted small">
+          {{ request_item.reviewed_at.strftime('%d %b %Y') if request_item.reviewed_at else '-' }}
+        </td>
+      </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endif %}
+{% endblock %}

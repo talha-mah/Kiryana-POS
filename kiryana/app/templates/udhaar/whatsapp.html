@@ -1,0 +1,22 @@
+{% extends 'base.html' %}
+{% block title %}WhatsApp Reminder{% endblock %}
+{% block content %}
+<div class="mb-3"><a href="{{ url_for('udhaar.customer_detail', customer_id=customer.id) }}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i>Back</a></div>
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6">
+    <div class="card p-4 text-center">
+      <div style="font-size:3rem">📱</div>
+      <h5 class="fw-bold mt-2">WhatsApp Reminder — {{ customer.name }}</h5>
+      <p class="text-muted">Balance: <strong class="text-danger">Rs. {{ "{:,.0f}".format(balance) }}</strong></p>
+      <div class="alert alert-light text-start">{{ message }}</div>
+      {% if wa_link %}
+      <a href="{{ wa_link }}" target="_blank" class="btn btn-success btn-lg">
+        <i class="bi bi-whatsapp me-2"></i>Open in WhatsApp
+      </a>
+      {% else %}
+      <div class="alert alert-warning">No phone number saved for this customer.</div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard — Kiryana{% endblock %}
+{% block content %}
+<h4 class="fw-bold mb-4"><i class="bi bi-shield-check me-2 text-success"></i>Admin Panel</h4>
+<div class="row g-3">
+  <div class="col-12 col-md-4">
+    <div class="card stat-card p-3">
+      <div class="text-muted small mb-1">Total Shops</div>
+      <div class="fs-3 fw-bold">{{ shops|length }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="card stat-card p-3">
+      <div class="text-muted small mb-1">Active Shops</div>
+      <div class="fs-3 fw-bold text-success">{{ shops|selectattr('is_active')|list|length }}</div>
+    </div>
+  </div>
+  <div class="col-12 col-md-4">
+    <div class="card stat-card warning p-3">
+      <div class="text-muted small mb-1">Pending Requests</div>
+      <div class="fs-3 fw-bold text-warning">{{ pending_count }}</div>
+    </div>
+  </div>
+</div>
+<div class="mt-4 d-grid gap-2 d-md-flex">
+  <a href="{{ url_for('admin.catalog') }}" class="btn btn-primary">
+    <i class="bi bi-grid me-1"></i>Manage Product Catalog
+  </a>
+  <a href="{{ url_for('admin.shops') }}" class="btn btn-outline-primary">
+    <i class="bi bi-shop me-1"></i>Manage Shops & Requests
+  </a>
+  <a href="{{ url_for('admin.add_shop') }}" class="btn btn-outline-secondary">
+    <i class="bi bi-plus me-1"></i>Add New Shop
+  </a>
+</div>
+{% endblock %}

@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Add Shop — Admin{% endblock %}
+{% block content %}
+<div class="mb-3"><a href="{{ url_for('admin.shops') }}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i>Back</a></div>
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-shop me-2"></i>Register New Shop</h5>
+      <form method="POST">
+        <h6 class="text-muted mb-2">Shop Info</h6>
+        <div class="mb-3">
+          <label class="form-label">Shop Name <span class="text-danger">*</span></label>
+          <input type="text" name="shop_name" class="form-control" required autofocus placeholder="e.g. Ahmed General Store">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Owner Name <span class="text-danger">*</span></label>
+          <input type="text" name="owner_name" class="form-control" required placeholder="e.g. Ahmed Khan">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Phone</label>
+          <input type="text" name="phone" class="form-control" placeholder="03xx-xxxxxxx">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Address</label>
+          <textarea name="address" class="form-control" rows="2" placeholder="Shop address..."></textarea>
+        </div>
+        <hr>
+        <h6 class="text-muted mb-2">Login Account</h6>
+        <div class="mb-3">
+          <label class="form-label">Owner Email <span class="text-danger">*</span></label>
+          <input type="email" name="email" class="form-control" required placeholder="owner@example.com">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Password <span class="text-danger">*</span></label>
+          <input type="password" name="password" class="form-control" required minlength="6">
+        </div>
+        <button type="submit" class="btn btn-primary w-100">Create Shop & Account</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,383 @@
+{% extends 'base.html' %}
+{% block title %}POS — Kiryana{% endblock %}
+
+{% block extra_css %}
+<style>
+  .product-result { cursor: pointer; padding: 10px 14px; border-bottom: 1px solid #f0f0f0; transition: background 0.15s; }
+  .product-result:hover { background: var(--k-green-light); }
+  .cart-item { display: flex; align-items: center; gap: 8px; padding: 10px 0; border-bottom: 1px solid #f0f0f0; }
+  .cart-item:last-child { border-bottom: none; }
+  .qty-btn { width: 30px; height: 30px; border: 1px solid #ddd; background: #fff; border-radius: 6px; font-size: 1.1rem; cursor: pointer; }
+  .qty-btn:hover { background: var(--k-green-light); }
+  #search-results { position: absolute; z-index: 100; width: 100%; background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); max-height: 300px; overflow-y: auto; }
+  .payment-btn { padding: 16px; font-size: 1rem; border-radius: 12px; font-weight: 600; }
+  .total-display { font-size: 2rem; font-weight: 700; color: var(--k-green); }
+  .quick-product { height: 100%; min-height: 92px; border: 1px solid #e2e8f0; border-radius: 8px; background: #fff; padding: 12px; text-align: left; transition: border-color 0.15s, background 0.15s, transform 0.15s; }
+  .quick-product:hover { border-color: var(--k-green); background: var(--k-green-light); transform: translateY(-1px); }
+  .quick-product-name { color: #1f2937; font-weight: 700; line-height: 1.2; min-height: 38px; }
+  .quick-product-price { color: var(--k-green); font-weight: 700; margin-top: 8px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h4 class="mb-0 fw-bold"><i class="bi bi-bag-plus me-2"></i>POS Checkout (بیچنا)</h4>
+</div>
+
+<div class="row g-3">
+  <!-- Product Search -->
+  <div class="col-12 col-md-7">
+    <div class="card mb-3">
+      <div class="card-body">
+        <div class="position-relative">
+          <input type="text" id="product-search" class="form-control form-control-lg"
+                 placeholder="🔍 Search products... (type to search)" autocomplete="off">
+          <div id="search-results" style="display:none;"></div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-outline-secondary flex-fill" onclick="showLooseModal()">
+            <i class="bi bi-coin me-1"></i>Loose Items (چھوٹی چیزیں)
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span class="fw-semibold"><i class="bi bi-lightning-charge me-1"></i>Quick Add Items</span>
+        <span class="text-muted small">Top selling</span>
+      </div>
+      <div class="card-body">
+        {% if quick_products %}
+        <div class="row g-2">
+          {% for product in quick_products %}
+          <div class="col-6 col-lg-4">
+            <button type="button" class="quick-product w-100"
+                    onclick='addProductToCart({{ product|tojson }})'>
+              <div class="quick-product-name">{{ product.name }}</div>
+              <div class="quick-product-price">Rs. {{ "%.0f"|format(product.price) }}</div>
+            </button>
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="text-center text-muted py-3">
+          <i class="bi bi-box-seam" style="font-size:2rem"></i>
+          <p class="mb-0 mt-2">No active products available yet.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Checkout Panel -->
+  <div class="col-12 col-md-5">
+    <!-- Cart -->
+    <div class="card mb-3">
+      <div class="card-header d-flex justify-content-between">
+        <span class="fw-semibold"><i class="bi bi-cart3 me-1"></i>Cart</span>
+        <button class="btn btn-sm btn-outline-danger" onclick="clearCart()">Clear</button>
+      </div>
+      <div class="card-body p-2" id="cart-list"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><span class="fw-semibold">Payment</span></div>
+      <div class="card-body">
+        <div class="text-center my-3">
+          <div class="text-muted small">TOTAL</div>
+          <div class="total-display" id="total-display">Rs. 0</div>
+        </div>
+
+        <!-- Payment Type -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Payment Type</label>
+          <div class="d-flex gap-2">
+            <button class="btn btn-success flex-fill payment-btn" id="btn-cash" onclick="setPayment('cash')">
+              <i class="bi bi-cash me-1"></i>Cash (نقد)
+            </button>
+            <button class="btn btn-outline-warning flex-fill payment-btn" id="btn-udhaar" onclick="setPayment('udhaar')">
+              <i class="bi bi-person-credit-card me-1"></i>Udhaar (اُدھار)
+            </button>
+          </div>
+        </div>
+
+        <!-- Customer (for udhaar) -->
+        <div id="customer-section" style="display:none;" class="mb-3">
+          <label class="form-label fw-semibold">Customer (اُدھار کے لیے)</label>
+          <select class="form-select" id="customer-select">
+            <option value="">-- Select Customer --</option>
+            {% for c in customers %}
+            <option value="{{ c.id }}">{{ c.name }} {% if c.phone %}({{ c.phone }}){% endif %}</option>
+            {% endfor %}
+          </select>
+          <a href="{{ url_for('udhaar.add_customer') }}" class="small text-primary mt-1 d-block">
+            <i class="bi bi-person-plus me-1"></i>Add new customer
+          </a>
+        </div>
+
+        <button class="btn btn-primary w-100 btn-lg mt-2" onclick="submitSale()" id="submit-btn">
+          <i class="bi bi-check-circle me-1"></i>Complete Sale
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Loose Items Modal -->
+<div class="modal fade" id="looseModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">Loose Items Amount</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <label class="form-label">Enter total amount (Rs.)</label>
+        <input type="number" id="loose-input" class="form-control form-control-lg" min="0" step="1" placeholder="0">
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-primary" onclick="addLoose()">Add</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content text-center">
+      <div class="modal-body py-4">
+        <div style="font-size:3rem">✅</div>
+        <h5 class="mt-2">Sale Complete!</h5>
+        <p class="text-muted" id="success-detail"></p>
+        <button class="btn btn-primary" onclick="resetPOS()">New Sale</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let cart = [];
+let looseAmount = 0;
+let paymentType = 'cash';
+let searchTimeout;
+let searchProducts = [];
+
+// Product search
+document.getElementById('product-search').addEventListener('input', function() {
+  clearTimeout(searchTimeout);
+  const q = this.value.trim();
+  if (q.length < 1) { hideResults(); return; }
+  searchTimeout = setTimeout(() => fetchProducts(q), 250);
+});
+
+document.getElementById('product-search').addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') hideResults();
+});
+
+document.addEventListener('click', function(e) {
+  if (!e.target.closest('#search-results') && !e.target.closest('#product-search')) hideResults();
+});
+
+async function fetchProducts(q) {
+  const res = await fetch(`/pos/search?q=${encodeURIComponent(q)}`);
+  searchProducts = await res.json();
+  const container = document.getElementById('search-results');
+  if (!searchProducts.length) { container.innerHTML = '<div class="product-result text-muted">No products found</div>'; }
+  else {
+    container.innerHTML = searchProducts.map((p, index) =>
+      `<button type="button" class="product-result w-100 text-start border-0" data-product-index="${index}">
+        <div class="fw-semibold">${escapeHtml(p.name)}</div>
+        <div class="text-muted small">Rs. ${Number(p.price).toLocaleString()}</div>
+      </button>`
+    ).join('');
+  }
+  container.style.display = 'block';
+}
+
+document.getElementById('search-results').addEventListener('click', function(e) {
+  const result = e.target.closest('[data-product-index]');
+  if (!result) return;
+  addProductToCart(searchProducts[Number(result.dataset.productIndex)]);
+});
+
+function hideResults() {
+  document.getElementById('search-results').style.display = 'none';
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[char]));
+}
+
+function addProductToCart(product) {
+  if (!product) return;
+  addToCart(Number(product.id), product.name, Number(product.price));
+}
+
+function addToCart(id, name, price) {
+  const existing = cart.find(i => i.id === id);
+  if (existing) { existing.qty++; }
+  else { cart.push({ id, name, price, qty: 1 }); }
+  const searchInput = document.getElementById('product-search');
+  if (searchInput) searchInput.value = '';
+  hideResults();
+  renderCart();
+}
+
+function changeQty(id, delta) {
+  const item = cart.find(i => i.id === id);
+  if (!item) return;
+  item.qty += delta;
+  if (item.qty <= 0) cart = cart.filter(i => i.id !== id);
+  renderCart();
+}
+
+function removeItem(id) {
+  cart = cart.filter(i => i.id !== id);
+  renderCart();
+}
+
+function clearCart() {
+  cart = [];
+  looseAmount = 0;
+  renderCart();
+}
+
+function renderCart() {
+  const list = document.getElementById('cart-list');
+  if (!cart.length && looseAmount === 0) {
+    list.innerHTML = `
+      <div class="text-center text-muted py-4">
+        <i class="bi bi-cart-x" style="font-size:2rem"></i>
+        <p class="mt-2 mb-0">Cart is empty. Add products from the quick list or search.</p>
+      </div>
+    `;
+  } else {
+    const productRows = cart.map(item => `
+      <div class="cart-item">
+        <div class="flex-grow-1">
+          <div class="fw-semibold">${escapeHtml(item.name)}</div>
+          <div class="text-muted small">Rs. ${item.price.toLocaleString()} each</div>
+        </div>
+        <button class="qty-btn" onclick="changeQty(${item.id}, -1)">−</button>
+        <span style="min-width:24px;text-align:center;font-weight:600">${item.qty}</span>
+        <button class="qty-btn" onclick="changeQty(${item.id}, 1)">+</button>
+        <div class="fw-bold text-success" style="min-width:70px;text-align:right">
+          Rs. ${(item.price * item.qty).toLocaleString()}
+        </div>
+        <button class="btn btn-sm btn-link text-danger p-0" onclick="removeItem(${item.id})">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    `).join('');
+    const looseRow = looseAmount > 0 ? `
+      <div class="cart-item">
+        <div class="flex-grow-1">
+          <div class="fw-semibold">Loose Items</div>
+          <div class="text-muted small">Manual amount</div>
+        </div>
+        <span class="badge bg-warning text-dark">Loose</span>
+        <div class="fw-bold text-success" style="min-width:70px;text-align:right">
+          Rs. ${looseAmount.toLocaleString('en-PK', {maximumFractionDigits:0})}
+        </div>
+        <button class="btn btn-sm btn-link text-danger p-0" onclick="removeLoose()">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
+    ` : '';
+    list.innerHTML = productRows + looseRow;
+  }
+  updateTotal();
+}
+
+function updateTotal() {
+  const itemsTotal = cart.reduce((sum, i) => sum + i.price * i.qty, 0);
+  const total = itemsTotal + looseAmount;
+  document.getElementById('total-display').textContent = 'Rs. ' + total.toLocaleString('en-PK', {maximumFractionDigits:0});
+}
+
+// Loose items
+function showLooseModal() {
+  document.getElementById('loose-input').value = looseAmount || '';
+  new bootstrap.Modal(document.getElementById('looseModal')).show();
+}
+function addLoose() {
+  looseAmount = parseFloat(document.getElementById('loose-input').value) || 0;
+  bootstrap.Modal.getInstance(document.getElementById('looseModal')).hide();
+  renderCart();
+}
+function removeLoose() {
+  looseAmount = 0;
+  renderCart();
+}
+
+// Payment type
+function setPayment(type) {
+  paymentType = type;
+  document.getElementById('btn-cash').className = type === 'cash' ? 'btn btn-success flex-fill payment-btn' : 'btn btn-outline-success flex-fill payment-btn';
+  document.getElementById('btn-udhaar').className = type === 'udhaar' ? 'btn btn-warning flex-fill payment-btn' : 'btn btn-outline-warning flex-fill payment-btn';
+  document.getElementById('customer-section').style.display = type === 'udhaar' ? 'block' : 'none';
+}
+
+// Submit sale
+async function submitSale() {
+  const total = cart.reduce((s, i) => s + i.price * i.qty, 0) + looseAmount;
+  if (total === 0) { alert('Cart is empty!'); return; }
+  if (paymentType === 'udhaar' && !document.getElementById('customer-select').value) {
+    alert('Please select a customer for udhaar!'); return;
+  }
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('submit-btn').innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Processing...';
+
+  const payload = {
+    items: cart.map(i => ({ id: i.id, qty: i.qty, price: i.price })),
+    loose_amount: looseAmount,
+    payment_type: paymentType,
+    customer_id: document.getElementById('customer-select').value || null
+  };
+
+  try {
+    const res = await fetch('/pos/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById('success-detail').textContent =
+        `Sale #${data.sale_id} — Rs. ${data.total.toLocaleString('en-PK', {maximumFractionDigits:0})} (${paymentType})`;
+      new bootstrap.Modal(document.getElementById('successModal')).show();
+    } else {
+      alert('Error: ' + data.error);
+    }
+  } catch (e) {
+    alert('Network error. Please try again.');
+  } finally {
+    document.getElementById('submit-btn').disabled = false;
+    document.getElementById('submit-btn').innerHTML = '<i class="bi bi-check-circle me-1"></i>Complete Sale';
+  }
+}
+
+function resetPOS() {
+  cart = [];
+  looseAmount = 0;
+  paymentType = 'cash';
+  setPayment('cash');
+  document.getElementById('customer-select').value = '';
+  bootstrap.Modal.getInstance(document.getElementById('successModal')).hide();
+  renderCart();
+}
+
+renderCart();
+</script>
+{% endblock %}

@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% block title %}Kiryana - Shop Management System{% endblock %}
+{% block public_container_class %}container-fluid px-0{% endblock %}
+{% block extra_css %}
+<style>
+  body { background: #f7faf8; }
+  .landing-hero {
+    min-height: 86vh;
+    display: flex;
+    align-items: center;
+    position: relative;
+    color: #fff;
+    background:
+      linear-gradient(90deg, rgba(6, 34, 27, 0.86), rgba(6, 34, 27, 0.55)),
+      url('https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=1800&q=80') center/cover;
+  }
+  .landing-nav {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+  }
+  .landing-brand {
+    color: #fff;
+    font-size: 1.35rem;
+    font-weight: 800;
+    text-decoration: none;
+  }
+  .landing-brand span { color: var(--k-accent); }
+  .landing-copy {
+    max-width: 680px;
+    padding-top: 5rem;
+    padding-bottom: 4rem;
+  }
+  .landing-copy h1 {
+    font-size: clamp(2.4rem, 5vw, 4.8rem);
+    font-weight: 800;
+    line-height: 1.02;
+    margin-bottom: 1rem;
+  }
+  .landing-copy p {
+    max-width: 560px;
+    color: rgba(255,255,255,0.86);
+    font-size: 1.08rem;
+  }
+  .landing-actions .btn {
+    min-width: 142px;
+    border-radius: 8px;
+    font-weight: 700;
+  }
+  .landing-actions .btn-light {
+    color: var(--k-green-dark);
+  }
+  .feature-band {
+    margin-top: -4rem;
+    position: relative;
+    z-index: 3;
+  }
+  .feature-card {
+    border-radius: 8px;
+    border: 1px solid #e5ece8;
+    box-shadow: 0 12px 30px rgba(15, 23, 42, 0.08);
+    height: 100%;
+  }
+  .feature-icon {
+    width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    background: var(--k-green-light);
+    color: var(--k-green);
+    font-size: 1.25rem;
+  }
+  @media (max-width: 768px) {
+    .landing-hero { min-height: 78vh; }
+    .feature-band { margin-top: 0; }
+  }
+</style>
+{% endblock %}
+{% block content %}
+<section class="landing-hero">
+  <nav class="landing-nav py-3">
+    <div class="container d-flex justify-content-between align-items-center">
+      <a class="landing-brand" href="{{ url_for('dashboard.index') }}"><i class="bi bi-shop me-1"></i>Kiry<span>ana</span></a>
+      <div class="d-flex gap-2">
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-sm"><i class="bi bi-box-arrow-in-right me-1"></i>Login</a>
+        <a href="{{ url_for('auth.shop_register') }}" class="btn btn-light btn-sm"><i class="bi bi-person-plus me-1"></i>Sign Up</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container">
+    <div class="landing-copy">
+      <h1>Kiryana</h1>
+      <p>Run sales, udhaar, suppliers, expenses, and daily cash checks from one clean dashboard built for local shop owners.</p>
+      <div class="landing-actions d-flex flex-column flex-sm-row gap-2 mt-4">
+        <a href="{{ url_for('auth.shop_register') }}" class="btn btn-light btn-lg"><i class="bi bi-person-plus me-2"></i>Register Shop</a>
+        <a href="{{ url_for('auth.login') }}" class="btn btn-outline-light btn-lg"><i class="bi bi-box-arrow-in-right me-2"></i>Login</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="feature-band pb-5">
+  <div class="container">
+    <div class="row g-3">
+      <div class="col-12 col-md-4">
+        <div class="card feature-card p-4">
+          <span class="feature-icon mb-3"><i class="bi bi-receipt"></i></span>
+          <h5 class="fw-bold">Fast Checkout</h5>
+          <p class="text-muted mb-0">Record cash and udhaar sales with shop-specific products and loose-item amounts.</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card feature-card p-4">
+          <span class="feature-icon mb-3"><i class="bi bi-people"></i></span>
+          <h5 class="fw-bold">Customer Ledger</h5>
+          <p class="text-muted mb-0">Track balances, payments, and overdue udhaar in a way that is easy to scan.</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-4">
+        <div class="card feature-card p-4">
+          <span class="feature-icon mb-3"><i class="bi bi-shield-check"></i></span>
+          <h5 class="fw-bold">Admin Approval</h5>
+          <p class="text-muted mb-0">New shop accounts stay pending until an admin reviews and approves them.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% block title %}{{ supplier.name }} — Supplier{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <a href="{{ url_for('supplier.index') }}" class="text-muted text-decoration-none small">
+      <i class="bi bi-arrow-left me-1"></i>Back
+    </a>
+    <h4 class="fw-bold mb-0 mt-1">{{ supplier.name }}</h4>
+    {% if supplier.phone %}<span class="text-muted">{{ supplier.phone }}</span>{% endif %}
+  </div>
+  <div class="text-end">
+    <div class="text-muted small">You Owe</div>
+    <div class="fs-2 fw-bold {% if supplier.current_balance > 0 %}text-danger{% else %}text-success{% endif %}">
+      Rs. {{ "{:,.0f}".format(supplier.current_balance) }}
+    </div>
+    <div class="d-flex justify-content-end gap-2 mt-2">
+      <a href="{{ url_for('supplier.edit_supplier', supplier_id=supplier.id) }}" class="btn btn-sm btn-outline-secondary">
+        <i class="bi bi-pencil me-1"></i>Edit
+      </a>
+      <form method="POST" action="{{ url_for('supplier.delete_supplier', supplier_id=supplier.id) }}" onsubmit="return confirm('Delete this supplier? This is only allowed when the balance is cleared.');">
+        <button type="submit" class="btn btn-sm btn-outline-danger">
+          <i class="bi bi-trash me-1"></i>Delete
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3">
+  <!-- Actions -->
+  <div class="col-12 col-md-4">
+    <!-- Record Delivery -->
+    <div class="card mb-3">
+      <div class="card-header"><span class="fw-semibold"><i class="bi bi-box-arrow-in-down me-1"></i>Log Delivery</span></div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('supplier.record_delivery', supplier_id=supplier.id) }}">
+          <div class="mb-2">
+            <label class="form-label">Amount (Rs.)</label>
+            <input type="number" name="amount" class="form-control" min="1" step="1" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Note</label>
+            <input type="text" name="note" class="form-control" placeholder="Items delivered...">
+          </div>
+          <button class="btn btn-danger w-100">Add to Balance</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Record Payment -->
+    <div class="card">
+      <div class="card-header"><span class="fw-semibold"><i class="bi bi-cash me-1"></i>Record Payment</span></div>
+      <div class="card-body">
+        <form method="POST" action="{{ url_for('supplier.record_payment', supplier_id=supplier.id) }}">
+          <div class="mb-2">
+            <label class="form-label">Amount Paid (Rs.)</label>
+            <input type="number" name="amount" class="form-control" min="1" step="1" required>
+          </div>
+          <div class="mb-2">
+            <label class="form-label">Note</label>
+            <input type="text" name="note" class="form-control" placeholder="Payment details...">
+          </div>
+          <button class="btn btn-success w-100">Record Payment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Transaction History -->
+  <div class="col-12 col-md-8">
+    <div class="card">
+      <div class="card-header"><span class="fw-semibold"><i class="bi bi-clock-history me-1"></i>Transaction History</span></div>
+      <div class="table-responsive">
+        <table class="table table-hover mb-0">
+          <thead>
+            <tr><th>Date</th><th>Type</th><th class="text-end">Amount</th><th class="text-end">Balance</th><th>Due</th><th>Note</th></tr>
+          </thead>
+          <tbody>
+          {% for e in entries %}
+          <tr>
+            <td class="text-muted small">{{ e.created_at.strftime('%d %b, %H:%M') }}</td>
+            <td>
+              {% if e.type.value == 'delivery' %}
+                <span class="badge bg-danger">Delivery</span>
+              {% else %}
+                <span class="badge bg-success">Payment</span>
+              {% endif %}
+            </td>
+            <td class="text-end fw-semibold">Rs. {{ "{:,.0f}".format(e.amount) }}</td>
+            <td class="text-end {% if e.balance_after > 0 %}text-danger{% else %}text-success{% endif %}">
+              Rs. {{ "{:,.0f}".format(e.balance_after) }}
+            </td>
+            <td class="text-muted small">
+              {% if e.due_date %}
+                {% if e.due_date < today %}
+                  <span class="overdue-badge">{{ e.due_date.strftime('%d %b') }}</span>
+                {% else %}
+                  {{ e.due_date.strftime('%d %b') }}
+                {% endif %}
+              {% else %}—{% endif %}
+            </td>
+            <td class="text-muted small">{{ e.note or '—' }}</td>
+          </tr>
+          {% else %}
+          <tr><td colspan="6" class="text-center text-muted py-3">No transactions yet.</td></tr>
+          {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

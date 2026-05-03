@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Edit Shop - Admin{% endblock %}
+{% block content %}
+<div class="mb-3"><a href="{{ url_for('admin.shops') }}" class="text-muted text-decoration-none small"><i class="bi bi-arrow-left me-1"></i>Back to Shops</a></div>
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6">
+    <div class="card p-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-pencil-square me-2"></i>Edit Shop</h5>
+      <form method="POST">
+        <h6 class="text-muted mb-2">Shop Info</h6>
+        <div class="mb-3">
+          <label class="form-label">Shop Name <span class="text-danger">*</span></label>
+          <input type="text" name="shop_name" class="form-control" required autofocus value="{{ shop.name }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Owner Name <span class="text-danger">*</span></label>
+          <input type="text" name="owner_name" class="form-control" required value="{{ shop.owner_name }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Phone</label>
+          <input type="text" name="phone" class="form-control" value="{{ shop.phone or '' }}">
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Address</label>
+          <textarea name="address" class="form-control" rows="2">{{ shop.address or '' }}</textarea>
+        </div>
+        {% if owner %}
+        <hr>
+        <h6 class="text-muted mb-2">Owner Login</h6>
+        <div class="mb-3">
+          <label class="form-label">Owner Email</label>
+          <input type="email" name="email" class="form-control" value="{{ owner.email }}">
+        </div>
+        {% endif %}
+        <button type="submit" class="btn btn-primary w-100">Save Changes</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

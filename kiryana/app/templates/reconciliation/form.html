@@ -1,0 +1,68 @@
+{% extends 'base.html' %}
+{% block title %}End of Day — Kiryana{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h4 class="fw-bold mb-0"><i class="bi bi-calculator me-2"></i>End of Day (دن کا حساب)</h4>
+  <a href="{{ url_for('reconciliation.history') }}" class="btn btn-outline-secondary btn-sm">
+    <i class="bi bi-clock-history me-1"></i>History
+  </a>
+</div>
+
+{% if existing %}
+<div class="card p-4 text-center">
+  <div style="font-size:3rem">✅</div>
+  <h5 class="fw-bold mt-2">Today's reconciliation is done!</h5>
+  <div class="row g-3 mt-2 justify-content-center">
+    <div class="col-12 col-sm-4">
+      <div class="card bg-light p-3">
+        <div class="text-muted small">Physical Cash</div>
+        <div class="fs-4 fw-bold">Rs. {{ "{:,.0f}".format(existing.physical_cash) }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card bg-light p-3">
+        <div class="text-muted small">Recorded Sales</div>
+        <div class="fs-4 fw-bold">Rs. {{ "{:,.0f}".format(existing.recorded_sales) }}</div>
+      </div>
+    </div>
+    <div class="col-12 col-sm-4">
+      <div class="card {% if existing.difference >= 0 %}bg-success text-white{% else %}bg-danger text-white{% endif %} p-3">
+        <div class="small opacity-75">Undocumented Sales</div>
+        <div class="fs-4 fw-bold">Rs. {{ "{:,.0f}".format(existing.difference) }}</div>
+      </div>
+    </div>
+  </div>
+  {% if existing.note %}
+  <p class="text-muted mt-3">Note: {{ existing.note }}</p>
+  {% endif %}
+</div>
+
+{% else %}
+<div class="row justify-content-center">
+  <div class="col-12 col-md-6">
+    <div class="card p-4">
+      <div class="alert alert-info">
+        <i class="bi bi-info-circle me-1"></i>
+        <strong>Today's recorded cash sales: Rs. {{ "{:,.0f}".format(recorded) }}</strong>
+        <br><small>Count your physical cash and enter it below.</small>
+      </div>
+      <form method="POST">
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Physical Cash in Drawer (Rs.)</label>
+          <input type="number" name="physical_cash" class="form-control form-control-lg"
+                 min="0" step="1" required autofocus placeholder="0">
+          <div class="form-text">Count all notes and coins. The difference will be logged as undocumented sales.</div>
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Note (optional)</label>
+          <input type="text" name="note" class="form-control" placeholder="Any remarks...">
+        </div>
+        <button type="submit" class="btn btn-primary w-100 btn-lg">
+          <i class="bi bi-check-circle me-1"></i>Submit End of Day
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
